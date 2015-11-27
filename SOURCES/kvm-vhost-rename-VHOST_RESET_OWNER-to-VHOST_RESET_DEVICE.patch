@@ -1,0 +1,127 @@
+From 5d92ecbd7b4e854fe2ea3a89688a2fff08f8fdca Mon Sep 17 00:00:00 2001
+From: Marcel Apfelbaum <marcel@redhat.com>
+Date: Thu, 24 Sep 2015 17:04:04 +0200
+Subject: [PATCH 09/13] vhost: rename VHOST_RESET_OWNER to VHOST_RESET_DEVICE
+
+Message-id: <1443114248-18614-8-git-send-email-marcel@redhat.com>
+Patchwork-id: 67942
+O-Subject: [RHEL-7.2 qemu-kvm-rhev PATCH 07/11] vhost: rename VHOST_RESET_OWNER to VHOST_RESET_DEVICE
+Bugzilla: 1207687
+RH-Acked-by: Victor Kaplansky <vkaplans@redhat.com>
+RH-Acked-by: Xiao Wang <jasowang@redhat.com>
+RH-Acked-by: Michael S. Tsirkin <mst@redhat.com>
+
+From: Yuanhan Liu <yuanhan.liu@linux.intel.com>
+
+Quote from Michael:
+
+    We really should rename VHOST_RESET_OWNER to VHOST_RESET_DEVICE.
+
+Suggested-by: Michael S. Tsirkin <mst@redhat.com>
+Signed-off-by: Yuanhan Liu <yuanhan.liu@linux.intel.com>
+Reviewed-by: Michael S. Tsirkin <mst@redhat.com>
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+Signed-off-by: Yuanhan Liu <yuanhan.liu@linux.intel.com>
+Reviewed-by: Marcel Apfelbaum <marcel@redhat.com>
+Tested-by: Marcel Apfelbaum <marcel@redhat.com>
+(cherry picked from commit d1f8b30ec8dde0318fd1b98d24a64926feae9625)
+Signed-off-by: Marcel Apfelbaum <marcel@redhat.com>
+Signed-off-by: Miroslav Rezanina <mrezanin@redhat.com>
+---
+ docs/specs/vhost-user.txt   | 4 ++--
+ hw/net/vhost_net.c          | 2 +-
+ hw/virtio/vhost-user.c      | 6 +++---
+ linux-headers/linux/vhost.h | 2 +-
+ tests/vhost-user-test.c     | 2 +-
+ 5 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/docs/specs/vhost-user.txt b/docs/specs/vhost-user.txt
+index 70da3b1..ccbbcbb 100644
+--- a/docs/specs/vhost-user.txt
++++ b/docs/specs/vhost-user.txt
+@@ -194,10 +194,10 @@ Message types
+       as an owner of the session. This can be used on the Slave as a
+       "session start" flag.
+ 
+- * VHOST_USER_RESET_OWNER
++ * VHOST_USER_RESET_DEVICE
+ 
+       Id: 4
+-      Equivalent ioctl: VHOST_RESET_OWNER
++      Equivalent ioctl: VHOST_RESET_DEVICE
+       Master payload: N/A
+ 
+       Issued when a new connection is about to be closed. The Master will no
+diff --git a/hw/net/vhost_net.c b/hw/net/vhost_net.c
+index 9d32d76..b7d29b7 100644
+--- a/hw/net/vhost_net.c
++++ b/hw/net/vhost_net.c
+@@ -287,7 +287,7 @@ static void vhost_net_stop_one(struct vhost_net *net,
+     } else if (net->nc->info->type == NET_CLIENT_OPTIONS_KIND_VHOST_USER) {
+         for (file.index = 0; file.index < net->dev.nvqs; ++file.index) {
+             const VhostOps *vhost_ops = net->dev.vhost_ops;
+-            int r = vhost_ops->vhost_call(&net->dev, VHOST_RESET_OWNER,
++            int r = vhost_ops->vhost_call(&net->dev, VHOST_RESET_DEVICE,
+                                           NULL);
+             assert(r >= 0);
+         }
+diff --git a/hw/virtio/vhost-user.c b/hw/virtio/vhost-user.c
+index 87198a4..708951c 100644
+--- a/hw/virtio/vhost-user.c
++++ b/hw/virtio/vhost-user.c
+@@ -32,7 +32,7 @@ typedef enum VhostUserRequest {
+     VHOST_USER_GET_FEATURES = 1,
+     VHOST_USER_SET_FEATURES = 2,
+     VHOST_USER_SET_OWNER = 3,
+-    VHOST_USER_RESET_OWNER = 4,
++    VHOST_USER_RESET_DEVICE = 4,
+     VHOST_USER_SET_MEM_TABLE = 5,
+     VHOST_USER_SET_LOG_BASE = 6,
+     VHOST_USER_SET_LOG_FD = 7,
+@@ -98,7 +98,7 @@ static unsigned long int ioctl_to_vhost_user_request[VHOST_USER_MAX] = {
+     VHOST_GET_FEATURES,     /* VHOST_USER_GET_FEATURES */
+     VHOST_SET_FEATURES,     /* VHOST_USER_SET_FEATURES */
+     VHOST_SET_OWNER,        /* VHOST_USER_SET_OWNER */
+-    VHOST_RESET_OWNER,      /* VHOST_USER_RESET_OWNER */
++    VHOST_RESET_DEVICE,      /* VHOST_USER_RESET_DEVICE */
+     VHOST_SET_MEM_TABLE,    /* VHOST_USER_SET_MEM_TABLE */
+     VHOST_SET_LOG_BASE,     /* VHOST_USER_SET_LOG_BASE */
+     VHOST_SET_LOG_FD,       /* VHOST_USER_SET_LOG_FD */
+@@ -222,7 +222,7 @@ static int vhost_user_call(struct vhost_dev *dev, unsigned long int request,
+         break;
+ 
+     case VHOST_USER_SET_OWNER:
+-    case VHOST_USER_RESET_OWNER:
++    case VHOST_USER_RESET_DEVICE:
+         break;
+ 
+     case VHOST_USER_SET_MEM_TABLE:
+diff --git a/linux-headers/linux/vhost.h b/linux-headers/linux/vhost.h
+index ead86db..14a0160 100644
+--- a/linux-headers/linux/vhost.h
++++ b/linux-headers/linux/vhost.h
+@@ -78,7 +78,7 @@ struct vhost_memory {
+ #define VHOST_SET_OWNER _IO(VHOST_VIRTIO, 0x01)
+ /* Give up ownership, and reset the device to default values.
+  * Allows subsequent call to VHOST_OWNER_SET to succeed. */
+-#define VHOST_RESET_OWNER _IO(VHOST_VIRTIO, 0x02)
++#define VHOST_RESET_DEVICE _IO(VHOST_VIRTIO, 0x02)
+ 
+ /* Set up/modify memory layout */
+ #define VHOST_SET_MEM_TABLE	_IOW(VHOST_VIRTIO, 0x03, struct vhost_memory)
+diff --git a/tests/vhost-user-test.c b/tests/vhost-user-test.c
+index 75fedf0..e301db7 100644
+--- a/tests/vhost-user-test.c
++++ b/tests/vhost-user-test.c
+@@ -58,7 +58,7 @@ typedef enum VhostUserRequest {
+     VHOST_USER_GET_FEATURES = 1,
+     VHOST_USER_SET_FEATURES = 2,
+     VHOST_USER_SET_OWNER = 3,
+-    VHOST_USER_RESET_OWNER = 4,
++    VHOST_USER_RESET_DEVICE = 4,
+     VHOST_USER_SET_MEM_TABLE = 5,
+     VHOST_USER_SET_LOG_BASE = 6,
+     VHOST_USER_SET_LOG_FD = 7,
+-- 
+1.8.3.1
+

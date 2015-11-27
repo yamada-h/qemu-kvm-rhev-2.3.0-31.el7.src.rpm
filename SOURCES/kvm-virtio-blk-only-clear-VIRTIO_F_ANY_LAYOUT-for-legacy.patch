@@ -1,0 +1,63 @@
+From 51416611c696fcc68a57c5f2392d2f4cbddb02ec Mon Sep 17 00:00:00 2001
+From: Marcel Apfelbaum <marcel@redhat.com>
+Date: Thu, 24 Sep 2015 17:03:58 +0200
+Subject: [PATCH 03/13] virtio-blk: only clear VIRTIO_F_ANY_LAYOUT for legacy
+ device
+
+Message-id: <1443114248-18614-2-git-send-email-marcel@redhat.com>
+Patchwork-id: 67935
+O-Subject: [RHEL-7.2 qemu-kvm-rhev PATCH 01/11] virtio-blk: only clear VIRTIO_F_ANY_LAYOUT for legacy device
+Bugzilla: 1207687
+RH-Acked-by: Victor Kaplansky <vkaplans@redhat.com>
+RH-Acked-by: Xiao Wang <jasowang@redhat.com>
+RH-Acked-by: Michael S. Tsirkin <mst@redhat.com>
+
+From: Jason Wang <jasowang@redhat.com>
+
+Chapter 6.3 of spec said
+
+"
+Transitional devices MUST offer, and if offered by the device
+transitional drivers MUST accept the following:
+
+VIRTIO_F_ANY_LAYOUT (27)
+"
+
+So this patch only clear VIRTIO_F_LAYOUT for legacy device.
+
+Cc: Stefan Hajnoczi <stefanha@redhat.com>
+Cc: Kevin Wolf <kwolf@redhat.com>
+Cc: qemu-block@nongnu.org
+Signed-off-by: Jason Wang <jasowang@redhat.com>
+Reviewed-by: Michael S. Tsirkin <mst@redhat.com>
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+(cherry picked from commit c9b11f971cfa1fd3eed716f62f4b835553b75490)
+Signed-off-by: Marcel Apfelbaum <marcel@redhat.com>
+Signed-off-by: Miroslav Rezanina <mrezanin@redhat.com>
+---
+ hw/block/virtio-blk.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/hw/block/virtio-blk.c b/hw/block/virtio-blk.c
+index 2aa6ad6..62b617e 100644
+--- a/hw/block/virtio-blk.c
++++ b/hw/block/virtio-blk.c
+@@ -727,13 +727,13 @@ static uint64_t virtio_blk_get_features(VirtIODevice *vdev, uint64_t features,
+     virtio_add_feature(&features, VIRTIO_BLK_F_GEOMETRY);
+     virtio_add_feature(&features, VIRTIO_BLK_F_TOPOLOGY);
+     virtio_add_feature(&features, VIRTIO_BLK_F_BLK_SIZE);
+-    virtio_clear_feature(&features, VIRTIO_F_ANY_LAYOUT);
+     if (__virtio_has_feature(features, VIRTIO_F_VERSION_1)) {
+         if (s->conf.scsi) {
+             error_setg(errp, "Please set scsi=off for virtio-blk devices in order to use virtio 1.0");
+             return 0;
+         }
+     } else {
++        virtio_clear_feature(&features, VIRTIO_F_ANY_LAYOUT);
+         virtio_add_feature(&features, VIRTIO_BLK_F_SCSI);
+     }
+ 
+-- 
+1.8.3.1
+

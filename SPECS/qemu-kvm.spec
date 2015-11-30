@@ -76,7 +76,7 @@ Obsoletes: %1 < %{obsoletes_version}
 Summary: QEMU is a FAST! processor emulator
 Name:    %{pkgname}%{?pkgsuffix}
 Version: 2.3.0
-Release: 31%{?dist}
+Release: 31%{?dist}_1.sd2
 # Epoch because we pushed a qemu-1.0 package. AIUI this can't ever be dropped
 Epoch: 10
 License: GPLv2+ and LGPLv2+ and BSD
@@ -1091,6 +1091,12 @@ Patch490: kvm-Revert-qdev-Use-qdev_get_device_class-for-device-typ.patch
 # For bz#1271145 - Guest OS paused after migration.
 Patch491: kvm-Migration-Generate-the-completed-event-only-when-we-.patch
 
+# Sheepdog
+Patch492: 0001-sheepdog-fix-resource-leak-with-sd_snapshot_create.patch
+Patch493: 0002-sheepdog-serialize-requests-to-overwrapping-area.patch
+Patch494: 0003-sheepdog-use-per-AIOCB-dirty-indexes-for-non-overlap.patch
+Patch495: 0004-sheepdog-refine-discard-support.patch
+
 BuildRequires: zlib-devel
 BuildRequires: SDL-devel
 BuildRequires: which
@@ -1807,6 +1813,10 @@ ApplyOptionalPatch()
 %patch489 -p1
 %patch490 -p1
 %patch491 -p1
+%patch492 -p1
+%patch493 -p1
+%patch494 -p1
+%patch495 -p1
 
 ApplyOptionalPatch qemu-kvm-test.patch
 
